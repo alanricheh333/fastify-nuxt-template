@@ -194,6 +194,26 @@ Keep them at transport boundaries and map them to framework-independent applicat
 
 Do not pass Fastify DTO/schema types through services, rules, repositories, or database layers.
 
+## Swagger / OpenAPI
+
+Every HTTP endpoint must be documented through the Fastify schema/OpenAPI setup.
+
+Each endpoint should define, where relevant:
+
+- tags
+- summary
+- clear description
+- path parameters
+- query parameters
+- request body
+- success response schemas
+- relevant error response schemas
+- authentication/security requirements
+
+The runtime validation/serialization schema should be the source of truth for generated API documentation. Do not maintain separate hand-written API documentation that can drift from the actual endpoint contract.
+
+Use a consistent shared error response schema once centralized API error handling is introduced. The exact error-handling implementation is intentionally deferred until the Fastify template is scaffolded.
+
 ## Database placement
 
 Database tables and repository functions may initially live inside a slice when they primarily belong to that capability.
@@ -332,3 +352,223 @@ For real instants:
 For timezone-independent dates such as a birthday, use PostgreSQL `date`.
 
 If local-time scheduling intent matters, preserve the IANA timezone (for example `Asia/Damascus`) separately from the instant.
+
+# Frontend Architecture
+
+## Core idea
+
+The Nuxt frontend follows the same business-process feature-slice philosophy as the backend, but the internal concerns are frontend-specific. Do not mirror backend folders mechanically.
+
+Use Nuxt framework directories for framework responsibilities and feature slices for product behavior.
+
+Recommended high-level shape:
+
+```text
+app/
+  pages/
+  layouts/
+  slices/
+  shared/
+  app.vue
+```
+
+A frontend slice represents a user-facing business capability or workflow, not a page, database entity, or generic component category.
+
+Examples:
+
+- browse-gigs
+- apply-to-gig
+- manage-posted-gig
+- review-applications
+
+## Pages and layouts
+
+Nuxt `pages/` and `layouts/` are framework/router composition boundaries.
+
+Pages should remain thin. They may:
+
+- read route information
+- compose feature-slice components
+- provide page-level layout/composition
+
+Pages must not contain business logic, server-state orchestration, or reusable feature logic.
+
+Move feature behavior into the relevant slice.
+
+## Frontend slice shape
+
+Keep slices flat while small.
+
+Example:
+
+```text
+apply-to-gig/
+  ApplyToGigForm.vue
+  use-apply-to-gig.ts
+  apply-to-gig.api.ts
+  apply-to-gig.mutation.ts
+  apply-to-gig.type.ts
+  README.md
+```
+
+When multiple files exist for a concern, create a folder:
+
+```text
+apply-to-gig/
+  components/
+  composables/
+  api/
+  queries/
+  mutations/
+  types/
+  const/
+  README.md
+```
+
+Follow the same anti-spam rule as the backend: do not create folders for a single file without a concrete reason.
+
+## Components
+
+Components should be focused on rendering and user interaction.
+
+A component may:
+
+- receive props
+- emit events
+- render state
+- manage truly local UI state
+- call a feature composable
+
+A component should not:
+
+- contain business rules
+- perform reusable calculations that belong in pure functions
+- directly coordinate multiple API calls
+- own cache invalidation strategy
+- duplicate server state into global stores
+- reach into another slice's internals
+
+Keep components specific to the UI responsibility they serve. Avoid generic-looking components that secretly contain feature-specific behavior.
+
+Promote a component to `shared/components` only when it is genuinely reusable across unrelated slices and is not business-specific.
+
+## Composables
+
+Feature composables orchestrate frontend behavior for a slice.
+
+They may coordinate:
+
+- local UI state
+- Pinia Colada queries/mutations
+- navigation effects
+- user interaction flow
+- mapping between API data and view state
+
+Do not move business complexity from components into oversized composables. Extract deterministic decisions/calculations into pure functions and test them independently.
+
+## State management
+
+Use the smallest state mechanism that fits the ownership of the state.
+
+### Pinia Colada
+
+Use Pinia Colada for server/async state:
+
+- remote queries
+- mutations
+- caching
+- invalidation
+- optimistic updates when appropriate
+- loading/error state related to server operations
+
+Do not copy Pinia Colada server data into Pinia merely to make it globally available.
+
+### Pinia
+
+Use Pinia for genuinely shared client-side application state, for example:
+
+- authenticated-user/session client metadata where appropriate
+- selected language/preferences
+- application-wide UI preferences
+- multi-step workflow state that must survive navigation
+- drafts that intentionally persist across unrelated components/routes
+
+Do not use Pinia for component-local state.
+
+### Local component/composable state
+
+Use Vue `ref`, `reactive`, and `computed` for state that belongs to a component or one feature-composable instance.
+
+Default mental model:
+
+```text
+server state        -> Pinia Colada
+global client state -> Pinia
+local UI state      -> Vue refs/reactive/computed
+```
+
+## Frontend API layer
+
+API files are transport adapters for backend HTTP communication.
+
+They should:
+
+- build/send requests
+- deserialize transport responses
+- expose typed request/response contracts
+
+They should not contain business decisions or UI behavior.
+
+Keep authentication/header mechanics centralized where practical instead of duplicating them across slices.
+
+## Frontend queries and mutations
+
+Frontend query/mutation files wrap Pinia Colada behavior and remain feature-specific unless genuinely reusable.
+
+Queries represent server reads. Mutations represent server state changes.
+
+Cache keys and invalidation should be intentional and colocated with the feature that understands their meaning.
+
+## Frontend pure logic
+
+Any deterministic frontend decision or calculation that is not merely rendering logic should be a pure function when practical.
+
+Examples include:
+
+- deriving allowed UI actions from already-fetched permissions/status
+- formatting a feature-specific display model when it contains meaningful logic
+- calculating client-side values that are not authoritative business decisions
+
+Authoritative business rules belong on the backend. Frontend rules may improve UX but must never be the only enforcement of security, authorization, pricing, eligibility, or state transitions.
+
+## Cross-slice boundaries
+
+A frontend slice must not import deep internal files from another slice.
+
+When cross-slice reuse is truly necessary, expose a small public surface from the target slice or promote genuinely generic code to `shared`.
+
+Avoid hidden coupling such as importing another slice's private component, composable, cache internals, or mutation implementation.
+
+## Internationalization and direction
+
+The frontend must support English and Arabic as first-class languages.
+
+- All user-facing strings should go through the localization system rather than being hard-coded in feature components.
+- Components must work in both LTR and RTL layouts.
+- Avoid CSS/layout assumptions that only work left-to-right.
+- Dates/numbers/currency should be formatted using locale-aware APIs.
+- Do not store already-localized strings as authoritative application data when a stable code/key is more appropriate.
+
+## PWA considerations
+
+Because the application is a PWA, frontend work should consider:
+
+- installability
+- offline/degraded-network behavior where relevant
+- cache freshness and invalidation
+- retry behavior
+- stale server state
+- responsive/mobile layouts
+- safe handling of authentication/session data in browser storage
+
+Do not introduce offline writes or background synchronization implicitly. Such behavior requires an explicit product and conflict-resolution decision.
