@@ -29,15 +29,19 @@ Read `docs/ARCHITECTURE.md` before modifying application structure.
 Core rules:
 
 - Organize backend code by business-process feature slices, not by entities or framework modules.
-- A slice represents a business capability or workflow and may span multiple entities/tables.
-- The slice facade is its public application boundary.
-- HTTP handlers, event handlers, jobs, and other slices access a slice through its facade.
+- Organize frontend code by user-facing business-process feature slices, not by generic technical buckets.
+- A slice represents a business capability or workflow and may span multiple entities/tables/components.
+- The backend slice facade is its public application boundary.
+- HTTP handlers, event handlers, jobs, and other slices access a backend slice through its facade.
 - Services are orchestration only. They contain no business decisions.
 - Business decisions live in pure rule functions.
 - Queries are read-only and may fetch/join/aggregate across tables directly.
 - Repository functions perform narrow database operations used by orchestration code.
 - Database code may start inside a slice and be promoted to `shared/db` when ownership/reuse becomes genuinely cross-slice.
 - Keep framework concerns at system boundaries. Rules and application types must not depend on Fastify, Drizzle, Nuxt, or transport-specific DTOs.
+- Nuxt pages/layouts are composition boundaries and should stay thin.
+- Vue components focus on rendering and interaction; feature logic belongs in slice composables/pure functions.
+- Pinia Colada owns server/async state; Pinia owns genuinely shared client state; local UI state stays local.
 
 ## Services
 
@@ -77,7 +81,7 @@ Private helpers may remain in the same file.
 
 Facades and framework controllers/handlers may expose multiple methods/handlers when that is the natural cohesive boundary.
 
-Do not create a folder for a concern that has only one file. When a concern grows to multiple files, create the corresponding folder (`rules/`, `types/`, `const/`, `errors/`, `dto/`, `db/`, etc.).
+Do not create a folder for a concern that has only one file. When a concern grows to multiple files, create the corresponding folder (`rules/`, `types/`, `const/`, `errors/`, `dto/`, `db/`, `components/`, `composables/`, `queries/`, `mutations/`, etc.).
 
 ## HTTP and events
 
@@ -86,6 +90,8 @@ Do not create a folder for a concern that has only one file. When a concern grow
 - They must not call services, rules, repositories, or database tables directly.
 - Transport DTOs/schemas stay at the transport boundary and must not leak into rules or repositories.
 - Prefer Fastify schemas/type providers for request validation and response serialization rather than manual parsing when the framework can do it safely.
+- Every HTTP endpoint must be documented through the Fastify/OpenAPI schema with clear summary, description, relevant tags, request schema, response schema, security requirements, and meaningful error responses.
+- The runtime endpoint schema is the source of truth for Swagger/OpenAPI documentation.
 
 ## Queries
 
@@ -95,6 +101,31 @@ Do not create a folder for a concern that has only one file. When a concern grow
 - Queries return dedicated projection/read-model types rather than persistence entities.
 - Do not hide business decisions inside SQL queries.
 - Queries must not call services or mutate application state.
+
+## Frontend slices
+
+Read the frontend section of `docs/ARCHITECTURE.md` before modifying Nuxt code.
+
+- Keep Nuxt `pages/` and `layouts/` thin; they compose slices and framework concerns only.
+- Put feature-specific UI behavior inside `app/slices/<business-process>/`.
+- Components render state, handle interaction, emit events, and call feature composables; they do not own business rules or complex orchestration.
+- Composables orchestrate frontend behavior but must not become dumping grounds. Extract deterministic logic into pure functions.
+- API files handle transport only.
+- Pinia Colada is the default for remote/server state, queries, mutations, caching, invalidation, and optimistic updates.
+- Pinia is for genuinely shared client-side state only.
+- Vue refs/reactive/computed are for local state.
+- Do not duplicate server state from Pinia Colada into Pinia without a concrete reason.
+- Do not import deep internals of another frontend slice; use a small public surface or promote generic code to `shared`.
+- User-facing strings must be localized. English and Arabic are first-class and UI must work in both LTR and RTL.
+- Because the frontend is a PWA, consider mobile/responsive behavior, stale/offline/degraded-network behavior, installability, and safe browser storage.
+
+## Components and frontend tests
+
+- Keep components cohesive and specific to their UI responsibility.
+- Promote components to `shared/components` only when they are genuinely reusable and not feature-specific.
+- Component test naming: `ComponentName.comp.test.ts` next to `ComponentName.vue` unless the local structure clearly requires a component folder.
+- Component tests verify observable rendering/interaction behavior rather than Vue implementation details.
+- Do not duplicate authoritative backend business-rule tests in frontend component tests.
 
 ## Database and time
 
@@ -114,13 +145,13 @@ Read `docs/TESTING.md` before adding or changing behavior.
 
 The development loop is test-driven where practical:
 
-1. Express expected business behavior with tests.
-2. Implement the smallest correct rule/application change.
+1. Express expected behavior with a test at the correct boundary.
+2. Implement the smallest correct change.
 3. Run the focused tests.
 4. Refactor while keeping tests green.
 5. Run the relevant broader validation.
 
-Rules require unit tests. Do not write unit/spec tests for orchestration services merely to test call ordering or mocks. Add end-to-end tests when they provide useful confidence for a complete use case, HTTP/event contract, or feature-slice flow.
+Backend rules require unit tests. Do not write unit/spec tests for orchestration services merely to test call ordering or mocks. Add component tests for meaningful Vue behavior and end-to-end tests when they provide useful confidence for a complete use case, HTTP/event contract, feature-slice flow, or critical user flow.
 
 ## Security and production readiness
 
@@ -132,13 +163,15 @@ Never weaken security controls merely to make a test pass. Never commit secrets 
 
 Always consider both development and production behavior. Avoid solutions that work only because of local state, local filesystem assumptions, development-only services, permissive CORS, disabled TLS, or machine-specific configuration.
 
+The backend will use centralized custom error handling with a consistent external error contract. Until that infrastructure is implemented, do not invent incompatible per-endpoint error shapes; keep error definitions explicit and easy to migrate to the shared handler.
+
 ## Documentation
 
 Every feature slice/use case must contain a `README.md` once it is implemented.
 
-Whenever a task touches a use case, update its README when behavior, architecture, API/event contract, rules, data flow, dependencies, or operational considerations changed.
+Whenever a task touches a use case, update its README when behavior, architecture, API/event contract, rules, data flow, dependencies, frontend behavior, or operational considerations changed.
 
-The README should explain what the use case does, its public facade operations, entry points, business rules, important data interactions, relevant events, and meaningful implementation/operational notes. Do not turn it into a line-by-line code description.
+The README should explain what the use case does, its public facade/API interactions, entry points, business rules, important data interactions, relevant events, frontend behavior when applicable, and meaningful implementation/operational notes. Do not turn it into a line-by-line code description.
 
 ## Delivery
 
@@ -148,10 +181,12 @@ Before declaring work complete:
 
 - Re-read the requirements and acceptance criteria.
 - Review the diff for unrelated changes.
-- Run relevant unit tests, type checks, linting, architecture checks, and build steps.
+- Run relevant unit tests, component tests, type checks, linting, architecture checks, and build steps.
 - Run relevant end-to-end tests where they add feature-level confidence.
-- Confirm new/changed rules have unit coverage.
+- Confirm new/changed backend rules have unit coverage.
+- Confirm changed Vue components have appropriate component coverage when behavior warrants it.
 - Confirm use-case documentation is current.
+- Confirm HTTP endpoint schemas keep Swagger/OpenAPI accurate.
 - Review security and production implications.
 - Report what was implemented, what was tested, and any remaining risks or assumptions.
 
