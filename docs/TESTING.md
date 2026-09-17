@@ -7,6 +7,7 @@ Testing should verify behavior, not implementation details.
 The strongest default is:
 
 - pure unit tests for business rules
+- component tests for meaningful Vue behavior
 - end-to-end tests for complete externally visible use-case flows where they provide meaningful confidence
 - no mock-heavy orchestration/service tests
 - no tests that merely assert internal call order
@@ -16,15 +17,15 @@ The strongest default is:
 Use a test-driven loop for business behavior where practical:
 
 1. Read the requirement and identify the business behavior.
-2. Write the rule test that expresses the behavior.
+2. Write the rule/component/E2E test that expresses the behavior at the correct boundary.
 3. Run it and confirm it fails for the expected reason.
-4. Implement the smallest pure rule change that makes it pass.
+4. Implement the smallest correct change that makes it pass.
 5. Refactor while keeping the test green.
 6. Run all tests relevant to the affected slice.
 
-Do not write production logic first and add superficial tests afterwards when the business rule can be expressed clearly up front.
+Do not write production logic first and add superficial tests afterwards when the expected behavior can be expressed clearly up front.
 
-## Rule tests
+## Backend rule tests
 
 Every business rule must have colocated unit tests.
 
@@ -61,6 +62,51 @@ Services are orchestration and should remain simple enough that such tests provi
 
 If a service becomes complex enough that mock-heavy tests seem necessary, first check whether business decisions or too much responsibility have leaked into the service.
 
+## Frontend component tests
+
+Use the naming convention:
+
+```text
+ComponentName.vue
+ComponentName.comp.test.ts
+```
+
+Component tests should verify meaningful observable UI behavior such as:
+
+- rendering based on props/state
+- emitted events
+- user interactions
+- loading/error/disabled states
+- accessibility-relevant behavior
+- important conditional rendering
+
+Do not test Vue implementation details, internal refs, or private component structure merely to increase coverage.
+
+Do not duplicate backend business-rule tests in components. Frontend tests should focus on presentation and interaction behavior.
+
+Prefer testing the smallest component boundary that gives meaningful confidence.
+
+## Frontend composable tests
+
+Pure logic extracted from composables should be tested as pure functions.
+
+Test composables directly only when they contain meaningful frontend orchestration that cannot be validated more clearly through a component or E2E test.
+
+Avoid tests that simply mock Pinia Colada/API functions and assert internal call order. If a composable becomes difficult to test without heavy mocking, simplify it and extract deterministic logic.
+
+## Pinia and Pinia Colada testing
+
+Do not test library behavior owned by Pinia or Pinia Colada.
+
+Test application behavior around them:
+
+- correct loading/error/success UI behavior
+- cache invalidation effects when they are important to the feature
+- state that must persist across navigation
+- feature-specific optimistic update behavior
+
+Avoid copying remote state into Pinia solely to make tests easier.
+
 ## End-to-end tests
 
 Use end-to-end tests when they provide confidence across a meaningful application boundary.
@@ -74,6 +120,8 @@ Good candidates:
 - an important database transaction
 - an important event-driven flow
 - behavior that depends on real Fastify/Drizzle integration
+- a complete user workflow across frontend and backend
+- critical bilingual/LTR/RTL flows where regressions would materially affect users
 
 End-to-end tests should verify observable behavior rather than private service implementation.
 
@@ -101,6 +149,12 @@ Complex queries that contain joins, aggregation, CTEs, pagination, or PostgreSQL
 
 Do not mock the SQL builder merely to test generated call structure.
 
+## API contract and documentation testing
+
+HTTP endpoint tests should validate important request/response contracts where practical, including expected validation failures and error shapes.
+
+Swagger/OpenAPI generation should remain derived from the same endpoint schemas used for runtime validation/serialization so tests do not need to maintain a separate API contract definition.
+
 ## Test data
 
 Keep test data explicit and easy to understand.
@@ -113,7 +167,8 @@ Use deterministic IDs/timestamps where useful.
 
 At minimum, run:
 
-- tests for changed rules
+- tests for changed backend rules
+- relevant frontend component tests
 - all unit tests for the affected use case/slice
 - relevant E2E tests when applicable
 - type checking
