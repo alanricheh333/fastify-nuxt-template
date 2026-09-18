@@ -104,8 +104,9 @@ Do not create a folder for a concern that has only one file. When a concern grow
 
 ## Frontend slices
 
-Read the frontend section of `docs/ARCHITECTURE.md` before modifying Nuxt code.
+Read the frontend section of `docs/ARCHITECTURE.md` and `docs/DESIGN_SYSTEM.md` before modifying Nuxt UI code.
 
+- Use Nuxt UI as the default component/design-system foundation.
 - Keep Nuxt `pages/` and `layouts/` thin; they compose slices and framework concerns only.
 - Put feature-specific UI behavior inside `app/slices/<business-process>/`.
 - Components render state, handle interaction, emit events, and call feature composables; they do not own business rules or complex orchestration.
@@ -118,14 +119,19 @@ Read the frontend section of `docs/ARCHITECTURE.md` before modifying Nuxt code.
 - Do not import deep internals of another frontend slice; use a small public surface or promote generic code to `shared`.
 - User-facing strings must be localized. English and Arabic are first-class and UI must work in both LTR and RTL.
 - Because the frontend is a PWA, consider mobile/responsive behavior, stale/offline/degraded-network behavior, installability, and safe browser storage.
+- Do not introduce another general-purpose component library without an explicit architectural reason.
+- Use semantic design tokens rather than feature-local hard-coded colors or arbitrary visual conventions.
 
 ## Components and frontend tests
 
 - Keep components cohesive and specific to their UI responsibility.
+- Prefer Nuxt UI primitives before inventing custom generic primitives.
+- Do not wrap every Nuxt UI component; create shared application components only when they add genuine reusable semantics or behavior.
 - Promote components to `shared/components` only when they are genuinely reusable and not feature-specific.
 - Component test naming: `ComponentName.comp.test.ts` next to `ComponentName.vue` unless the local structure clearly requires a component folder.
 - Component tests verify observable rendering/interaction behavior rather than Vue implementation details.
 - Do not duplicate authoritative backend business-rule tests in frontend component tests.
+- Verify direction-sensitive components and flows in RTL when Arabic affects layout or interaction.
 
 ## Database and time
 
