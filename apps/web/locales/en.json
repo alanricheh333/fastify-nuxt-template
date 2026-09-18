@@ -1,0 +1,7 @@
+{
+  "starter": {
+    "badge": "Base template",
+    "title": "Nuxt + Fastify product starter",
+    "description": "Replace this page with your product slices while keeping the shared architecture, design system, testing, and delivery rules."
+  }
+}
