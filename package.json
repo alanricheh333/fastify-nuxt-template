@@ -1,0 +1,21 @@
+{
+  "name": "fastify-nuxt-template",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "validate": "turbo typecheck lint test build"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10"
+}
