@@ -1,0 +1,32 @@
+{
+  "name": "@app/web",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@nuxt/ui": "latest",
+    "@nuxtjs/i18n": "latest",
+    "@pinia/colada": "latest",
+    "@pinia/colada-nuxt": "latest",
+    "@pinia/nuxt": "latest",
+    "@vite-pwa/nuxt": "latest",
+    "nuxt": "latest",
+    "pinia": "latest",
+    "vue": "latest",
+    "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@nuxt/test-utils": "latest",
+    "@playwright/test": "latest",
+    "@vue/test-utils": "latest",
+    "eslint": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
