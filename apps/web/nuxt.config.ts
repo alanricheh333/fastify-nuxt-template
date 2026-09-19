@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     '@pinia/colada-nuxt',
     '@nuxtjs/i18n',
     '@vite-pwa/nuxt',
+    '@nuxt/eslint',
   ],
 
   devtools: { enabled: true },
