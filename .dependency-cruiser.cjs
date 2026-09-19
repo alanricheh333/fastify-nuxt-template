@@ -1,5 +1,3 @@
-const path = require('node:path')
-
 const API = '^apps/api/src/'
 const WEB = '^apps/web/app/'
 
@@ -56,7 +54,7 @@ module.exports = {
     {
       name: 'api-repositories-must-not-depend-upward',
       severity: 'error',
-      comment: 'Repositories are infrastructure operations and must not depend on service/rule/facade/transport code.',
+      comment: 'Repositories are infrastructure operations and must not depend on service/rule/facade/query/transport code.',
       from: { path: `${API}slices/.+\\.repository\\.ts$` },
       to: {
         path: `${API}slices/.*(?:\\.service\\.ts$|\\.rule\\.ts$|\\.facade\\.ts$|\\.query\\.ts$|\\.http\\.ts$|\\.event\\.ts$)`,
@@ -65,14 +63,11 @@ module.exports = {
     {
       name: 'api-cross-slice-access-only-through-facade',
       severity: 'error',
-      comment: 'A backend slice may use another slice only through that target slice facade. DTOs should be mapped at the calling slice boundary rather than imported across slices.',
-      from: { path: `${API}slices/([^/]+)/` },
+      comment: 'A backend slice may use another slice only through that target slice facade. Facade/service/query may freely use their own slice DTOs and shared code.',
+      from: { path: `${API}slices/([^/]+)/.+` },
       to: {
-        path: `${API}slices/([^/]+)/`,
+        path: `${API}slices/(?!$1/)[^/]+/.+`,
         pathNot: `${API}slices/[^/]+/[^/]+\\.facade\\.ts$`,
-      },
-      module: {
-        pathNot: '^$'
       },
     },
     {
@@ -80,14 +75,20 @@ module.exports = {
       severity: 'error',
       comment: 'Pages compose slices through their public entry points instead of deep-importing slice internals.',
       from: { path: `${WEB}pages/` },
-      to: { path: `${WEB}slices/[^/]+/.+`, pathNot: `${WEB}slices/[^/]+/index\\.(ts|js)$` },
+      to: {
+        path: `${WEB}slices/[^/]+/.+`,
+        pathNot: `${WEB}slices/[^/]+/index\\.(ts|js)$`,
+      },
     },
     {
       name: 'web-cross-slice-deep-imports-forbidden',
       severity: 'error',
-      comment: 'A frontend slice may depend on another slice only through that slice public index.',
-      from: { path: `${WEB}slices/([^/]+)/` },
-      to: { path: `${WEB}slices/([^/]+)/.+`, pathNot: `${WEB}slices/[^/]+/index\\.(ts|js)$` },
+      comment: 'A frontend slice may depend on another slice only through that target slice public index.',
+      from: { path: `${WEB}slices/([^/]+)/.+` },
+      to: {
+        path: `${WEB}slices/(?!$1/)[^/]+/.+`,
+        pathNot: `${WEB}slices/[^/]+/index\\.(ts|js)$`,
+      },
     },
   ],
   options: {
@@ -95,17 +96,12 @@ module.exports = {
       path: 'node_modules',
     },
     exclude: {
-      path: '(^|/)(node_modules|dist|\.nuxt|\.output|coverage)/',
+      path: '(^|/)(node_modules|dist|\\.nuxt|\\.output|coverage)/',
     },
     tsPreCompilationDeps: true,
     enhancedResolveOptions: {
       exportsFields: ['exports'],
       conditionNames: ['import', 'require', 'node', 'default'],
-    },
-    reporterOptions: {
-      dot: {
-        collapsePattern: 'node_modules/[^/]+',
-      },
     },
   },
 }
