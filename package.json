@@ -6,11 +6,13 @@
     "build": "turbo build",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
+    "architecture:check": "depcruise --config .dependency-cruiser.cjs apps/api/src apps/web/app",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
-    "validate": "turbo typecheck lint test build"
+    "validate": "pnpm typecheck && pnpm lint && pnpm architecture:check && pnpm test && pnpm build"
   },
   "devDependencies": {
+    "dependency-cruiser": "latest",
     "turbo": "latest"
   },
   "engines": {
