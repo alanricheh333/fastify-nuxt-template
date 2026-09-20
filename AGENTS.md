@@ -65,6 +65,7 @@ The service/use case owns the transaction boundary when several persistence oper
 - Private helper functions are allowed in the same rule file when they improve readability.
 - Every rule must have colocated unit tests.
 - Rule unit tests use plain inputs and outputs/errors and must not use mocks.
+- Rules may throw typed `ApplicationError` subclasses for business failures when returning a result would force business branching into a service.
 
 ## Files and exports
 
@@ -96,6 +97,20 @@ Do not create a folder for a concern that has only one file. When a concern grow
 - Prefer Fastify schemas/type providers for HTTP request validation and response serialization rather than manual parsing when the framework can do it safely.
 - Every HTTP endpoint must be documented through the Fastify/OpenAPI schema with clear summary, description, relevant tags, request schema, response schema, security requirements, and meaningful error responses.
 - The runtime endpoint schema is the source of truth for Swagger/OpenAPI documentation.
+- Do not add repetitive controller-level try/catch blocks merely to translate known application errors. Let typed errors propagate to centralized error handling.
+
+## Error handling
+
+Read `docs/ERROR_HANDLING.md` before introducing or changing application/business errors or HTTP error responses.
+
+- All meaningful business/application errors extend the shared transport-agnostic `ApplicationError` base.
+- Error ownership follows reuse: use-case-local first, slice-level when reused across use cases, and `shared/errors` only when genuinely cross-slice.
+- Business errors must not contain HTTP status codes.
+- Register HTTP status mappings explicitly in `apps/api/src/application-error-http-map.ts` by stable application error code.
+- The centralized Fastify handler owns transport mapping and the shared API error response shape.
+- Unmapped application errors and unexpected errors are logged internally and returned as sanitized 500 responses.
+- Never expose stack traces, SQL/database details, secrets, raw internal exception messages, or other implementation details to clients.
+- Validation and unknown-route errors use the same external error contract.
 
 ## Queries
 
@@ -182,7 +197,7 @@ Never weaken security controls merely to make a test pass. Never commit secrets 
 
 Always consider both development and production behavior. Avoid solutions that work only because of local state, local filesystem assumptions, development-only services, permissive CORS, disabled TLS, or machine-specific configuration.
 
-The backend will use centralized custom error handling with a consistent external error contract. Until that infrastructure is implemented, do not invent incompatible per-endpoint error shapes; keep error definitions explicit and easy to migrate to the shared handler.
+The backend uses centralized custom error handling with a consistent external error contract. Follow `docs/ERROR_HANDLING.md`; do not invent incompatible per-endpoint error shapes or expose internal exceptions directly.
 
 ## Documentation
 
