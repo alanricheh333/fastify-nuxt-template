@@ -2,11 +2,16 @@ import Fastify from 'fastify'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { applicationErrorHttpMap } from './application-error-http-map.js'
+import { apiErrorSchema } from './shared/http/api-error.schema.js'
+import { registerErrorHandling } from './shared/http/register-error-handling.js'
 
 export const createApp = async () => {
   const app = Fastify({
     logger: true,
   }).withTypeProvider<TypeBoxTypeProvider>()
+
+  registerErrorHandling(app, applicationErrorHttpMap)
 
   await app.register(swagger, {
     openapi: {
@@ -14,6 +19,11 @@ export const createApp = async () => {
         title: 'Application API',
         description: 'HTTP API for the application.',
         version: '0.1.0',
+      },
+      components: {
+        schemas: {
+          ApiError: apiErrorSchema,
+        },
       },
     },
   })
