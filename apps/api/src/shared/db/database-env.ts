@@ -1,10 +1,4 @@
-export type DatabaseEnv = {
-  databaseUrl: string
-  maxConnections: number
-  idleTimeoutMs: number
-  connectionTimeoutMs: number
-  ssl: boolean
-}
+import type { DatabaseEnv } from './database-env.type.js'
 
 export const getDatabaseEnv = (): DatabaseEnv => {
   const databaseUrl = process.env.DATABASE_URL
