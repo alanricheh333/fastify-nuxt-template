@@ -9,18 +9,27 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --max-warnings=0",
     "test": "vitest run",
-    "test:e2e": "vitest run --config vitest.e2e.config.ts"
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:check": "drizzle-kit check",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@fastify/swagger": "latest",
     "@fastify/swagger-ui": "latest",
     "@fastify/type-provider-typebox": "latest",
+    "dotenv": "latest",
+    "drizzle-orm": "latest",
     "fastify": "latest",
+    "pg": "latest",
     "typebox": "latest"
   },
   "devDependencies": {
     "@eslint/js": "latest",
     "@types/node": "latest",
+    "@types/pg": "latest",
+    "drizzle-kit": "latest",
     "eslint": "latest",
     "tsx": "latest",
     "typescript": "latest",
