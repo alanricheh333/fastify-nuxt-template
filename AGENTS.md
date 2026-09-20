@@ -36,7 +36,7 @@ Core rules:
 - Services are orchestration only. They contain no business decisions.
 - Business decisions live in pure rule functions.
 - Queries are read-only and may fetch/join/aggregate across tables directly.
-- Repository functions perform narrow database operations used by orchestration code.
+- Repositories are entity-focused persistence boundaries and may expose multiple cohesive, intention-revealing operations for that entity.
 - Database code may start inside a slice and be promoted to `shared/db` when ownership/reuse becomes genuinely cross-slice.
 - Keep framework concerns at system boundaries. Rules and application types must not depend on Fastify, Drizzle, Nuxt, or transport-specific DTOs.
 - Nuxt pages/layouts are composition boundaries and should stay thin.
@@ -47,9 +47,13 @@ Core rules:
 
 A service coordinates work only. It may load data, call rules, persist results, publish events, coordinate transactions, and return results.
 
+A service may expose multiple cohesive operations when they belong to the same use case or capability. Do not split services into one file per function merely for symmetry.
+
 A service must not contain business branching or business decisions. Do not put business conditions in `if`, `switch`, ternary expressions, policy checks, eligibility checks, state-transition decisions, calculations, or similar logic inside a service. Move such decisions into a rule.
 
 Technical sequencing is allowed, but the service should read as a workflow rather than a decision tree.
+
+The service/use case owns the transaction boundary when several persistence operations must succeed or fail atomically. A private helper in the same service file may encapsulate transaction orchestration for readability. Private transaction helpers must remain orchestration-only and must not contain business decisions.
 
 ## Rules
 
@@ -66,20 +70,20 @@ Technical sequencing is allowed, but the service should read as a workflow rathe
 
 Prefer functions over classes unless a framework or concrete technical reason makes a class clearly better.
 
-Default rule: one primary export per file.
+Use cohesion, not arbitrary file splitting, as the default boundary.
 
-- Rule file: one exported rule function.
-- Service file: one exported service function/factory.
-- Query file: one exported query function/factory.
-- Repository file: one exported repository function/factory.
+- Rule file: exactly one exported rule function.
+- Query file: one exported query function/factory per read model/projection.
 - Type file: one exported type.
 - Const file: one exported constant.
 - Error file: one exported error.
-- Entity/table file: one exported entity/table definition.
+- Table file: one exported persistence table definition.
+- Service file: may expose multiple cohesive operations for the same use case/capability.
+- Repository file: one repository per persistence entity; it may expose multiple cohesive persistence operations for that entity.
+- Facade: may expose multiple public operations for the slice.
+- HTTP/event registrar/controller: may expose or register multiple related handlers.
 
 Private helpers may remain in the same file.
-
-Facades and framework controllers/handlers may expose multiple methods/handlers when that is the natural cohesive boundary.
 
 Do not create a folder for a concern that has only one file. When a concern grows to multiple files, create the corresponding folder (`rules/`, `types/`, `const/`, `errors/`, `dto/`, `db/`, `components/`, `composables/`, `queries/`, `mutations/`, etc.).
 
@@ -89,7 +93,7 @@ Do not create a folder for a concern that has only one file. When a concern grow
 - They validate/deserialize external input, map it to application input, call the facade, and serialize/map the output.
 - They must not call services, rules, repositories, or database tables directly.
 - Transport DTOs/schemas stay at the transport boundary and must not leak into rules or repositories.
-- Prefer Fastify schemas/type providers for request validation and response serialization rather than manual parsing when the framework can do it safely.
+- Prefer Fastify schemas/type providers for HTTP request validation and response serialization rather than manual parsing when the framework can do it safely.
 - Every HTTP endpoint must be documented through the Fastify/OpenAPI schema with clear summary, description, relevant tags, request schema, response schema, security requirements, and meaningful error responses.
 - The runtime endpoint schema is the source of truth for Swagger/OpenAPI documentation.
 
@@ -98,7 +102,8 @@ Do not create a folder for a concern that has only one file. When a concern grow
 - Queries are parallel to services and are called by the facade.
 - Queries are strictly read-only.
 - Queries may access multiple tables directly and use SQL/Drizzle joins, aggregation, projections, and optimized read shapes.
-- Queries return dedicated projection/read-model types rather than persistence entities.
+- Queries return dedicated projection/read-model types.
+- Queries may import slice-local DTOs/read-model types and shared code where useful.
 - Do not hide business decisions inside SQL queries.
 - Queries must not call services or mutate application state.
 
@@ -137,7 +142,15 @@ Read the frontend section of `docs/ARCHITECTURE.md` and `docs/DESIGN_SYSTEM.md` 
 
 - Prefer PostgreSQL and Drizzle for database access.
 - Use parameterized/query-builder database access; never build SQL from untrusted string interpolation.
-- Use narrow, intention-revealing repository functions rather than generic CRUD repositories.
+- Name Drizzle persistence-definition files `*.table.ts`; export the table with the plain entity name (for example `application` from `application.table.ts`).
+- Keep table definitions declarative and free of business behavior.
+- Prefer one repository per persistence entity. Repository methods should be intention-revealing and added because the application needs them; avoid generic CRUD dumping grounds.
+- A slice owns its persistence entities unless ownership becomes genuinely broad. Reuse by more than three slices is a strong heuristic for promotion to `shared/db`, not an absolute law.
+- Cross-slice writes and business behavior go through the owning slice facade. Another slice must not directly use the owning slice repository for writes/behavior.
+- Read-only queries may directly read/join tables across slices when building projections.
+- Services own transaction boundaries for multi-step atomic workflows; repositories accept the provided database/transaction context rather than starting independent transactions that hide the use-case boundary.
+- Generate migrations explicitly with Drizzle Kit, review every generated migration, and allow reviewed manual SQL for PostgreSQL-specific needs. Never auto-run destructive production migrations blindly.
+- Store API migrations under `apps/api/drizzle/`.
 - Store real instants as PostgreSQL `timestamptz`, normalized to UTC.
 - Transport instants as ISO-8601 UTC strings.
 - Convert to local time only at presentation boundaries or when a business rule explicitly requires a timezone.
