@@ -94,6 +94,8 @@ The facade may expose multiple operations because it represents a cohesive publi
 
 The facade must remain thin. It delegates commands to services and reads to queries; it does not contain business logic.
 
+The facade may import slice-local DTOs/types and shared code when useful for mapping or exposing the public contract.
+
 ## Service
 
 A service is an orchestrator.
@@ -117,6 +119,9 @@ Services may:
 - persist results
 - emit events
 - map technical/application results
+- import slice-local DTOs/types and shared code when useful
+
+A service may expose multiple cohesive operations when they belong to the same use case or capability. Do not force one exported service function per file when that would fragment one cohesive workflow.
 
 Services must not make business decisions.
 
@@ -125,6 +130,14 @@ Business conditions such as eligibility, state transitions, pricing, limits, aut
 Service code should not contain business `if`, `switch`, or ternary branching. If orchestration appears to require a business branch, extract the decision into a rule and orchestrate the rule's result.
 
 Technical failure propagation and framework-neutral sequencing are allowed, but keep services linear and explicit.
+
+### Transactions
+
+The service/use case owns the transaction boundary when several persistence operations must succeed or fail atomically.
+
+A private helper in the same service file may encapsulate the transaction block for readability. Private transaction helpers are orchestration helpers only and must not introduce business decisions.
+
+Repositories should accept the provided database/transaction context rather than starting hidden independent transactions that prevent the use case from controlling atomicity.
 
 ## Rules
 
@@ -157,13 +170,16 @@ Facade
 Queries:
 
 - are read-only
-- may access several tables directly
+- may access several tables directly, including tables owned by other slices when building projections
 - may use Drizzle/SQL joins, aggregation, grouping, projections, CTEs, and optimized read shapes
 - may bypass repositories for reads when direct SQL is clearer or more efficient
 - return dedicated read-model/projection types
+- may import slice-local DTOs/read-model types and shared code where useful
 - must not mutate state
 - must not contain business decisions
 - must not call services
+
+Use one query file per cohesive read model/projection. Do not combine unrelated projections into one generic query object.
 
 Do not force a read across multiple repositories and then combine the results in application code when one clear SQL query can produce the correct projection.
 
@@ -186,13 +202,15 @@ Use Fastify schemas/type providers for HTTP request validation and response seri
 
 Event payload schemas/DTOs follow the same principle.
 
+A cohesive HTTP/event registrar may contain multiple related handlers. Do not create one controller/route file per endpoint unless size or cohesion justifies it.
+
 ## DTOs
 
-DTOs represent external transport contracts. They are not domain/application models.
+DTOs represent transport/application contracts. They are not persistence models and must not contain business behavior.
 
-Keep them at transport boundaries and map them to framework-independent application inputs.
+Facade, service, and query code may import slice-local DTOs when that keeps the contract explicit and does not leak framework-specific behavior.
 
-Do not pass Fastify DTO/schema types through services, rules, repositories, or database layers.
+Rules and repositories should remain independent of transport-specific DTO concerns.
 
 ## Swagger / OpenAPI
 
@@ -214,9 +232,11 @@ The runtime validation/serialization schema should be the source of truth for ge
 
 Use a consistent shared error response schema once centralized API error handling is introduced. The exact error-handling implementation is intentionally deferred until the Fastify template is scaffolded.
 
-## Database placement
+## Database placement and ownership
 
-Database tables and repository functions may initially live inside a slice when they primarily belong to that capability.
+Database infrastructure such as the Drizzle client, connection/configuration, transaction-related types/helpers, and broadly shared DB utilities live under `src/shared/db`.
+
+Persistence tables and repositories normally live with the slice that owns the corresponding business data.
 
 Example:
 
@@ -224,38 +244,74 @@ Example:
 some-slice/
   db/
     application.table.ts
-    insert-application.repository.ts
+    application.repository.ts
 ```
 
-Promote database code into `src/shared/db` when its ownership and usage become genuinely cross-slice.
+A slice remains the owner of an entity even when a small number of other slices need behavior involving it. Those other slices must go through the owning slice facade for writes and business behavior.
 
-A useful heuristic is reuse by around three or more slices, but this is not a hard numeric law. Promote based on shared ownership and architectural clarity, not import count alone.
+Reuse by more than three slices is a strong heuristic that ownership may have become genuinely shared and the table/repository may belong under `src/shared/db`. This is not an absolute mechanical threshold: semantic ownership matters more than import count.
 
-Do not let the first implemented slice become the accidental permanent owner of a broadly shared entity such as User merely because it happened to introduce the table first.
+Do not let the first implemented slice become the accidental permanent owner of a truly platform-level entity merely because it introduced it first.
+
+Cross-slice read-only queries are different: a query may directly join/read another slice's table when building a projection because queries are the read side and do not own behavior.
 
 ## Repositories
 
-Repositories are narrow database operations used by orchestration code.
+Use one repository per persistence entity.
 
-Prefer intention-revealing functions such as:
+Example:
 
-- `insertApplication`
-- `markUserVerified`
-- `loadApplicationContext`
+```text
+application.table.ts
+application.repository.ts
+```
 
-Avoid generic catch-all CRUD repositories unless a concrete need justifies them.
+A repository may expose multiple cohesive persistence operations for its entity, for example:
 
-A repository may read/write the data needed for its operation but must not contain business policy.
+- `findById`
+- `findActiveByStudent`
+- `insert`
+- `markAccepted`
 
-One exported repository function/factory per file.
+Prefer explicit intention-revealing methods over broad overloaded or generic APIs such as `find`, `save`, or a catch-all CRUD surface when more specific operations make intent clearer.
 
-## Tables/entities
+Repositories may use a provided Drizzle database/transaction context. They should not decide transaction boundaries themselves when the use case needs several operations to be atomic.
 
-Database entities/table declarations represent persistence shape only. Do not put business behavior on persistence entities.
+A repository must not contain business policy.
 
-With Drizzle, table definitions should remain declarative and dumb.
+## Tables
 
-Business behavior belongs in rules.
+Use `*.table.ts` for Drizzle persistence definitions.
+
+Example:
+
+```text
+application.table.ts
+```
+
+Export the table using the plain entity name:
+
+```ts
+export const application = pgTable(...)
+```
+
+Avoid suffixing the exported value with `Entity` or `Table` unless a concrete naming collision requires it.
+
+Table declarations represent persistence shape only. Keep them declarative and free of business behavior.
+
+## Migrations
+
+Store API migrations under:
+
+```text
+apps/api/drizzle/
+```
+
+Generate migrations explicitly with Drizzle Kit from reviewed schema changes.
+
+Every generated migration must be reviewed before use. Manual SQL migrations are acceptable when PostgreSQL-specific behavior, data movement, indexing, or operational safety makes them clearer or safer.
+
+Never auto-run destructive production migrations blindly.
 
 ## Shared code
 
@@ -275,6 +331,8 @@ shared/
 Do not move business-specific rules to `shared` merely because two places use them. Shared helpers should generally be domain-agnostic or represent genuinely shared infrastructure/contracts.
 
 Avoid turning `shared` into a dumping ground.
+
+`shared` may be imported by slices, but `shared` must not depend back on slices.
 
 ## Files and folders
 
@@ -298,22 +356,22 @@ apply-to-gig/
 
 Use analogous behavior for `types`, `const`, `errors`, `dto`, `queries`, `db`, etc.
 
-## Exports
+## Exports and cohesion
 
-Default to one primary export per file:
+Use cohesion rather than an arbitrary one-function-per-file rule.
 
-- one rule function
-- one service function/factory
-- one query function/factory
-- one repository function/factory
-- one type
-- one constant
-- one error
-- one persistence table/entity definition
+- rules: exactly one exported rule function per file
+- queries: one cohesive read model/projection per file
+- types: one exported type per type file
+- const: one exported constant per const file
+- errors: one exported error per error file
+- tables: one exported persistence table definition per table file
+- services: may expose multiple cohesive operations for the same use case/capability
+- repositories: one repository per entity, with multiple cohesive entity-specific persistence methods allowed
+- facades: multiple public operations are expected when they form one slice boundary
+- HTTP/event registrars/controllers: multiple related handlers are allowed
 
 Private helper functions/types/constants may remain internal to the file.
-
-Facades and cohesive framework controllers/registrars may expose multiple operations where that is the natural boundary.
 
 ## Dependency direction
 
@@ -337,7 +395,9 @@ Repositories and queries must not depend on services, facades, HTTP, or events.
 
 HTTP/events must not bypass the facade.
 
-Cross-slice calls go through the target slice facade rather than importing its internals.
+Cross-slice writes and business behavior go through the target slice facade rather than importing its internals.
+
+Read-only queries may directly read cross-slice tables for projections.
 
 ## Time and dates
 
