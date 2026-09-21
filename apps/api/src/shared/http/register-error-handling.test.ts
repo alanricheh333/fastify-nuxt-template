@@ -17,7 +17,7 @@ describe('registerErrorHandling', () => {
     const app = Fastify({ logger: false })
     registerErrorHandling(app, { TEST_CONFLICT: 409 })
 
-    app.get('/test', async () => {
+    app.get('/test', () => {
       throw new TestConflictError()
     })
 
@@ -34,7 +34,7 @@ describe('registerErrorHandling', () => {
     const app = Fastify({ logger: false })
     registerErrorHandling(app, {})
 
-    app.get('/test', async () => {
+    app.get('/test', () => {
       throw new TestConflictError()
     })
 
@@ -51,7 +51,7 @@ describe('registerErrorHandling', () => {
     const app = Fastify({ logger: false })
     registerErrorHandling(app, {})
 
-    app.get('/test', async () => {
+    app.get('/test', () => {
       throw new Error('database password leaked here')
     })
 

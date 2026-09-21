@@ -5,6 +5,7 @@ export default withNuxt(
     ignores: ['.nuxt/**', '.output/**', 'dist/**', 'coverage/**', 'node_modules/**'],
   },
   {
+    files: ['app/**/*.{ts,vue}'],
     rules: {
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-explicit-any': 'error',

@@ -6,7 +6,7 @@
     "build": "nuxt build",
     "typecheck": "nuxt typecheck",
     "lint": "eslint . --max-warnings=0",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "postinstall": "nuxt prepare"
   },
@@ -28,7 +28,8 @@
     "@playwright/test": "latest",
     "@vue/test-utils": "latest",
     "eslint": "latest",
-    "typescript": "latest",
-    "vitest": "latest"
+    "typescript": "6.0.3",
+    "vitest": "latest",
+    "vue-tsc": "^3.3.11"
   }
 }

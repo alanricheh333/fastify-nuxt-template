@@ -5,6 +5,11 @@ export const apiErrorSchema = Type.Object({
     code: Type.String(),
     message: Type.String(),
     requestId: Type.String(),
-    details: Type.Optional(Type.Unknown()),
+    details: Type.Optional({
+      ...Type.Unknown(),
+      description: 'Additional safe error details.',
+    }),
   }),
+}, {
+  $id: 'ApiError',
 })
