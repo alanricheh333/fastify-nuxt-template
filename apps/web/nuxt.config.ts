@@ -12,14 +12,22 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  eslint: {
+    config: {
+      typescript: {
+        tsconfigPath: './tsconfig.json',
+      },
+    },
+  },
+
   i18n: {
     defaultLocale: 'en',
     strategy: 'prefix_except_default',
+    restructureDir: '.',
     locales: [
       { code: 'en', name: 'English', language: 'en-US', dir: 'ltr', file: 'en.json' },
       { code: 'ar', name: 'العربية', language: 'ar-SY', dir: 'rtl', file: 'ar.json' },
     ],
-    lazy: true,
     langDir: 'locales',
   },
 

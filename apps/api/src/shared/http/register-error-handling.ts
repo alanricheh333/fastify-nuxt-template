@@ -1,4 +1,4 @@
-import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ApplicationError } from '../errors/application-error.js'
 import type { ApiErrorResponse } from './api-error-response.type.js'
 import type { ApplicationErrorHttpMap } from './application-error-http-map.type.js'
@@ -89,13 +89,17 @@ const sendError = (
 }
 
 const isValidationError = (
-  error: FastifyError,
-): error is FastifyError & { validation: unknown } => {
-  return error.validation !== undefined
+  error: unknown,
+): error is Error & { validation: unknown } => {
+  return error instanceof Error && 'validation' in error && error.validation !== undefined
 }
 
 const isSafeFastifyClientError = (
-  error: FastifyError,
-): error is FastifyError & { statusCode: number } => {
-  return error.statusCode !== undefined && error.statusCode >= 400 && error.statusCode < 500
+  error: unknown,
+): error is Error & { code?: string, statusCode: number } => {
+  return error instanceof Error
+    && 'statusCode' in error
+    && typeof error.statusCode === 'number'
+    && error.statusCode >= 400
+    && error.statusCode < 500
 }

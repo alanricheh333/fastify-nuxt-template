@@ -1,7 +1,8 @@
 import Fastify from 'fastify'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
-import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { Type } from '@fastify/type-provider-typebox'
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { applicationErrorHttpMap } from './application-error-http-map.js'
 import { apiErrorSchema } from './shared/http/api-error.schema.js'
 import { registerErrorHandling } from './shared/http/register-error-handling.js'
@@ -46,7 +47,7 @@ export const createApp = async () => {
         },
       },
     },
-    async () => ({ status: 'ok' as const }),
+    () => ({ status: 'ok' as const }),
   )
 
   return app
