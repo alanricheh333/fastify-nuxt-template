@@ -78,7 +78,15 @@ For HTTP applications consider:
 - open redirects
 - cache headers for sensitive responses
 
-Do not use permissive `*` production CORS merely because it simplifies development.
+CORS rules:
+
+- configure trusted origins through `CORS_ALLOWED_ORIGINS`
+- use exact origins rather than wildcard production access
+- reject unknown browser origins
+- allow requests without an `Origin` header so server-to-server clients, CLI tools, and health checks continue to work
+- enable credentialed CORS only when a product actually requires cookie/credential-based cross-origin requests
+- when credentials are enabled, keep origins explicit and coordinate CORS with the product's cookie and CSRF design
+- never use permissive `origin: true` or `*` in production merely to make a frontend error disappear
 
 ## State-changing operations
 
