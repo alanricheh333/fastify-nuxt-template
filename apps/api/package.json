@@ -16,6 +16,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@fastify/cors": "latest",
     "@fastify/swagger": "latest",
     "@fastify/swagger-ui": "latest",
     "@fastify/type-provider-typebox": "latest",
