@@ -35,6 +35,28 @@ describe('registerCors', () => {
     await app.close()
   })
 
+  it('handles trusted preflight requests with explicit methods and headers', async () => {
+    const app = await createTestApp()
+
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/test',
+      headers: {
+        origin: 'http://localhost:3000',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'content-type,x-csrf-token',
+      },
+    })
+
+    expect(response.statusCode).toBe(204)
+    expect(response.headers['access-control-allow-origin']).toBe('http://localhost:3000')
+    expect(response.headers['access-control-allow-methods']).toContain('POST')
+    expect(response.headers['access-control-allow-headers']).toContain('Content-Type')
+    expect(response.headers['access-control-allow-headers']).toContain('X-CSRF-Token')
+
+    await app.close()
+  })
+
   it('rejects an unconfigured browser origin', async () => {
     const app = await createTestApp()
 
