@@ -148,6 +148,15 @@ Never merge the PR unless explicitly instructed by the user.
 
 Treat CI as an independent verification layer. Local/agent tests passing do not replace CI.
 
+The repository CI workflow runs on pull requests and pushes to `main` or `integration`. It must:
+
+1. use the repository-pinned pnpm version through Corepack
+2. install with `pnpm install --frozen-lockfile`
+3. run the API Drizzle migration/schema check
+4. run the root `pnpm validate` command, which covers type checking, linting, architecture rules, tests, and builds
+
+A dependency change is incomplete until the committed lockfile is updated. CI intentionally rejects package manifests that do not match `pnpm-lock.yaml`.
+
 Preview environments should be created by deterministic CI/hosting workflows rather than ad-hoc agent state.
 
 When a preview environment exists, use it to verify meaningful user-facing flows before marking work ready for human review.
