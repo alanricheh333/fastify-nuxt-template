@@ -14,13 +14,14 @@ import { registerRateLimit } from './shared/http/register-rate-limit.js'
 import { registerRequestId } from './shared/http/register-request-id.js'
 import { registerSecurityHeaders } from './shared/http/register-security-headers.js'
 import { createReadinessState } from './shared/runtime/create-readiness-state.js'
+import type { ReadinessState } from './shared/runtime/readiness-state.type.js'
 
-export const createApp = async () => {
+export const createApp = async (
+  readinessState: ReadinessState = createReadinessState(),
+) => {
   const app = Fastify({
     logger: getLoggerOptions(),
   }).withTypeProvider<TypeBoxTypeProvider>()
-
-  const readinessState = createReadinessState()
 
   registerRequestId(app)
   registerErrorHandling(app, applicationErrorHttpMap)
@@ -49,8 +50,5 @@ export const createApp = async () => {
 
   registerHealthRoutes(app, readinessState)
 
-  return {
-    app,
-    readinessState,
-  }
+  return app
 }
