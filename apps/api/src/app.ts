@@ -3,10 +3,9 @@ import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { applicationErrorHttpMap } from './application-error-http-map.js'
+import type { RuntimeConfig } from './shared/config/runtime-config.type.js'
 import { apiErrorSchema } from './shared/http/api-error.schema.js'
-import { getCorsConfig } from './shared/http/get-cors-config.js'
 import { getLoggerOptions } from './shared/http/get-logger-options.js'
-import { getRateLimitConfig } from './shared/http/get-rate-limit-config.js'
 import { registerCors } from './shared/http/register-cors.js'
 import { registerErrorHandling } from './shared/http/register-error-handling.js'
 import { registerHealthRoutes } from './shared/http/register-health-routes.js'
@@ -17,17 +16,18 @@ import { createReadinessState } from './shared/runtime/create-readiness-state.js
 import type { ReadinessState } from './shared/runtime/readiness-state.type.js'
 
 export const createApp = async (
+  config: RuntimeConfig,
   readinessState: ReadinessState = createReadinessState(),
 ) => {
   const app = Fastify({
-    logger: getLoggerOptions(),
+    logger: getLoggerOptions(config.logging.level),
   }).withTypeProvider<TypeBoxTypeProvider>()
 
   registerRequestId(app)
   registerErrorHandling(app, applicationErrorHttpMap)
-  await registerCors(app, getCorsConfig())
-  await registerSecurityHeaders(app, process.env.NODE_ENV === 'production')
-  await registerRateLimit(app, getRateLimitConfig())
+  await registerCors(app, config.cors)
+  await registerSecurityHeaders(app, config.environment === 'production')
+  await registerRateLimit(app, config.rateLimit)
 
   await app.register(swagger, {
     openapi: {
