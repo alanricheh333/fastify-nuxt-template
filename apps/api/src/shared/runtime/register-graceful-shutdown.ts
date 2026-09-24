@@ -5,6 +5,7 @@ type ShutdownSignal = 'SIGINT' | 'SIGTERM'
 type RegisterGracefulShutdownOptions = {
   app: FastifyInstance
   timeoutMs: number
+  markNotReady?: () => void
   cleanup?: ReadonlyArray<() => Promise<void>>
   logger?: Pick<FastifyBaseLogger, 'info' | 'error'>
 }
@@ -12,6 +13,7 @@ type RegisterGracefulShutdownOptions = {
 export const registerGracefulShutdown = ({
   app,
   timeoutMs,
+  markNotReady,
   cleanup = [],
   logger = app.log,
 }: RegisterGracefulShutdownOptions): (() => void) => {
@@ -35,6 +37,7 @@ export const registerGracefulShutdown = ({
 
   async function performShutdown(signal: ShutdownSignal): Promise<void> {
     logger.info({ signal }, 'Graceful shutdown started.')
+    markNotReady?.()
 
     const timeout = setTimeout(() => {
       logger.error({ signal, timeoutMs }, 'Graceful shutdown timed out.')
