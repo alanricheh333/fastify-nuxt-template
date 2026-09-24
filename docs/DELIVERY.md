@@ -153,14 +153,31 @@ The repository CI workflow runs on pull requests and pushes to `main` or `integr
 1. use the repository-pinned Node version from `.nvmrc`
 2. use the repository-pinned pnpm version through Corepack
 3. install with `pnpm install --frozen-lockfile`
-4. run the API Drizzle migration/schema check
-5. run the root `pnpm validate` command, which covers type checking, linting, architecture rules, tests, and builds
+4. run type checking
+5. run linting
+6. run architecture/dependency rules
+7. run tests
+8. build the repository
+9. run the API Drizzle migration/schema check
 
 A dependency change is incomplete until the committed lockfile is updated. CI intentionally rejects package manifests that do not match `pnpm-lock.yaml`.
 
 Preview environments should be created by deterministic CI/hosting workflows rather than ad-hoc agent state.
 
 When a preview environment exists, use it to verify meaningful user-facing flows before marking work ready for human review.
+
+## Runtime configuration
+
+Runtime environment variables are parsed once at API startup through the centralized runtime configuration layer. Infrastructure modules must consume the typed configuration passed to them rather than reading `process.env` independently.
+
+Configuration rules:
+
+- fail startup immediately when required values are missing or malformed
+- keep development-safe defaults explicit
+- parse booleans and numeric values centrally rather than at call sites
+- add new runtime variables to `.env.example`, the runtime config type/parser, and parser tests together
+- do not open long-lived resources before runtime configuration has validated successfully
+- secrets remain environment/deployment configuration and must never be committed
 
 ## Production
 
