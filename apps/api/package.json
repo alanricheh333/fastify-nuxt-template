@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@fastify/cors": "latest",
+    "@fastify/helmet": "latest",
     "@fastify/swagger": "latest",
     "@fastify/swagger-ui": "latest",
     "@fastify/type-provider-typebox": "latest",
