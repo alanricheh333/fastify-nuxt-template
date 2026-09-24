@@ -50,6 +50,20 @@ Consider:
 
 Choose limits appropriate for the feature and production environment.
 
+Rate-limiting rules:
+
+- use a generous global API limit configured with `RATE_LIMIT_MAX` and `RATE_LIMIT_WINDOW_MS`
+- keep stricter endpoint limits in code, close to the protected route
+- prefer named policies from `rate-limit-policies.ts` such as `authSensitive`, `expensiveOperation`, and `writeHeavy` instead of scattering raw numbers throughout handlers
+- exempt infrastructure health checks from the global limiter
+- keep the default store in memory for the MVP/single-instance deployment model
+- before running more than one API instance, replace the in-memory store with a shared store such as Redis so all instances enforce one consistent limit
+- do not use PostgreSQL as the default request-rate-limit store
+- the default limiter keys by `request.ip`; do not trust `X-Forwarded-For` or similar headers unless Fastify `trustProxy` is explicitly configured for a known reverse proxy/load balancer
+- review proxy/IP behavior as part of production deployment because incorrect proxy trust can make IP-based limits ineffective or attacker-controlled
+- auth endpoints such as login, registration, password reset, and verification resend should normally use a stricter route-level policy
+- expensive exports/searches and write-heavy operations should also be reviewed for explicit route-level limits
+
 ## Secrets and credentials
 
 - Never commit secrets, tokens, passwords, private keys, or production credentials.
