@@ -10,6 +10,7 @@ The default API runtime instantiates PostgreSQL/Drizzle once in `server.ts`, whi
 - do not create database clients inside slices, repositories, queries, or services
 - pass `Database` / `DatabaseExecutor` explicitly to repositories, queries, services, or factories that need persistence access
 - register `databaseClient.close` with graceful shutdown
+- close the database client if HTTP startup fails before graceful shutdown is registered
 
 ## Readiness
 

@@ -1,10 +1,12 @@
 import Fastify from 'fastify'
 import { describe, expect, it } from 'vitest'
+import { registerErrorHandling } from './register-error-handling.js'
 import { registerRateLimit } from './register-rate-limit.js'
 
 const createTestApp = async () => {
   const app = Fastify({ logger: false })
 
+  registerErrorHandling(app, {})
   await registerRateLimit(app, {
     max: 2,
     timeWindowMs: 60_000,
