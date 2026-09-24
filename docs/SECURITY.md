@@ -88,6 +88,15 @@ CORS rules:
 - when credentials are enabled, keep origins explicit and coordinate CORS with the product's cookie and CSRF design
 - never use permissive `origin: true` or `*` in production merely to make a frontend error disappear
 
+Security-header rules:
+
+- register `@fastify/helmet` globally on the API
+- keep HSTS disabled in local development and enable it in production
+- do not define a generic global CSP in the base API template
+- define CSP at the layer that actually serves browser documents, usually Nuxt or the ingress/reverse proxy
+- if an API-served HTML surface such as Swagger UI needs a special policy, scope that exception to that surface instead of weakening the whole application
+- do not disable Helmet headers merely to work around an integration issue without understanding the security impact
+
 ## State-changing operations
 
 For writes consider:
