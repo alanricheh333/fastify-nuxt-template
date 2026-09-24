@@ -1,6 +1,7 @@
 import rateLimit from '@fastify/rate-limit'
 import type { FastifyInstance } from 'fastify'
 import type { RateLimitConfig } from './rate-limit-config.type.js'
+import { RateLimitExceededError } from './rate-limit-exceeded.error.js'
 
 export const registerRateLimit = async (
   app: FastifyInstance,
@@ -10,12 +11,6 @@ export const registerRateLimit = async (
     global: true,
     max: config.max,
     timeWindow: config.timeWindowMs,
-    errorResponseBuilder: (request) => ({
-      error: {
-        code: 'RATE_LIMIT_EXCEEDED',
-        message: 'Too many requests. Please try again later.',
-        requestId: request.id,
-      },
-    }),
+    errorResponseBuilder: () => new RateLimitExceededError(),
   })
 }

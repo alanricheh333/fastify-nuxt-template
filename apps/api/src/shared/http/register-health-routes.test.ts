@@ -19,7 +19,7 @@ describe('registerHealthRoutes', () => {
   it('reports ready when all readiness checks pass', async () => {
     const app = Fastify({ logger: false })
     const readinessState = createReadinessState()
-    readinessState.addCheck('database', async () => true)
+    readinessState.addCheck('database', () => Promise.resolve(true))
     registerHealthRoutes(app, readinessState)
 
     const response = await app.inject({ method: 'GET', url: '/health/ready' })
@@ -33,7 +33,7 @@ describe('registerHealthRoutes', () => {
   it('reports not ready when a dependency check fails', async () => {
     const app = Fastify({ logger: false })
     const readinessState = createReadinessState()
-    readinessState.addCheck('database', async () => false)
+    readinessState.addCheck('database', () => Promise.resolve(false))
     registerHealthRoutes(app, readinessState)
 
     const response = await app.inject({ method: 'GET', url: '/health/ready' })

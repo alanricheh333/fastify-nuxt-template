@@ -1,6 +1,8 @@
 import type { FastifyServerOptions } from 'fastify'
 
-export const getLoggerOptions = (): FastifyServerOptions['logger'] => ({
+type LoggerOptions = Exclude<FastifyServerOptions['logger'], boolean | undefined>
+
+export const getLoggerOptions = (): LoggerOptions => ({
   level: process.env.LOG_LEVEL ?? (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
   redact: {
     paths: [

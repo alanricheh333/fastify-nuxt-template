@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
 
       - name: Enable Corepack
         run: corepack enable
@@ -37,6 +37,8 @@ jobs:
 
       - name: Check database migrations
         run: pnpm --filter @app/api db:check
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app
 
       - name: Validate repository
         run: pnpm validate
