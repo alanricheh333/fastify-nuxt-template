@@ -8,6 +8,7 @@ import { apiErrorSchema } from './shared/http/api-error.schema.js'
 import { getCorsConfig } from './shared/http/get-cors-config.js'
 import { registerCors } from './shared/http/register-cors.js'
 import { registerErrorHandling } from './shared/http/register-error-handling.js'
+import { registerSecurityHeaders } from './shared/http/register-security-headers.js'
 
 export const createApp = async () => {
   const app = Fastify({
@@ -16,6 +17,7 @@ export const createApp = async () => {
 
   registerErrorHandling(app, applicationErrorHttpMap)
   await registerCors(app, getCorsConfig())
+  await registerSecurityHeaders(app, process.env.NODE_ENV === 'production')
 
   await app.register(swagger, {
     openapi: {
