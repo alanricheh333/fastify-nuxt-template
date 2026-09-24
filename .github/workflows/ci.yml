@@ -35,10 +35,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check architecture
+        run: pnpm architecture:check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
       - name: Check database migrations
         run: pnpm --filter @app/api db:check
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app
-
-      - name: Validate repository
-        run: pnpm validate
