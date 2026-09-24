@@ -164,11 +164,23 @@ The API listens for `SIGTERM` and `SIGINT` and begins graceful shutdown rather t
 
 Shutdown behavior should remain ordered and explicit:
 
-1. stop accepting new HTTP work through `app.close()`
-2. allow Fastify to complete in-flight requests
-3. close registered application resources such as database pools, queues, consumers, schedulers, or workers
-4. finish before `SHUTDOWN_TIMEOUT_MS`; a timeout or cleanup failure should result in a non-zero exit code
+1. mark the instance not ready so infrastructure can stop routing new traffic to it
+2. stop accepting new HTTP work through `app.close()`
+3. allow Fastify to complete in-flight requests
+4. close registered application resources such as database pools, queues, consumers, schedulers, or workers
+5. finish before `SHUTDOWN_TIMEOUT_MS`; a timeout or cleanup failure should result in a non-zero exit code
 
 Any long-lived resource added to the application must participate in the shutdown lifecycle through the composition root. For example, when the database client is instantiated there, register its `close()` function as a cleanup callback.
 
 Deployment infrastructure should allow at least the configured shutdown timeout between sending `SIGTERM` and force-killing the process. If a future product adds long-running jobs, queue consumers, or scheduled work, define how they stop accepting new jobs and whether active work is completed, requeued, or abandoned before deployment.
+
+## Health checks
+
+The API exposes separate liveness and readiness endpoints:
+
+- `GET /health/live` answers whether the Node/Fastify process is alive. Keep this check lightweight and do not add database or external-service calls to it.
+- `GET /health/ready` answers whether the instance is ready to receive production traffic. It returns `503` when the application is shutting down or when any registered readiness dependency check fails.
+
+Readiness checks are registered explicitly in the composition root as infrastructure dependencies are added. For example, once the application owns a PostgreSQL client at startup, register a lightweight database readiness check there. Do not fake dependency checks when the dependency is not yet part of the application lifecycle.
+
+Liveness and readiness endpoints are exempt from application rate limiting so deployment infrastructure can probe them reliably.
