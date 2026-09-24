@@ -6,15 +6,18 @@ import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { applicationErrorHttpMap } from './application-error-http-map.js'
 import { apiErrorSchema } from './shared/http/api-error.schema.js'
 import { getCorsConfig } from './shared/http/get-cors-config.js'
+import { getLoggerOptions } from './shared/http/get-logger-options.js'
 import { registerCors } from './shared/http/register-cors.js'
 import { registerErrorHandling } from './shared/http/register-error-handling.js'
+import { registerRequestId } from './shared/http/register-request-id.js'
 import { registerSecurityHeaders } from './shared/http/register-security-headers.js'
 
 export const createApp = async () => {
   const app = Fastify({
-    logger: true,
+    logger: getLoggerOptions(),
   }).withTypeProvider<TypeBoxTypeProvider>()
 
+  registerRequestId(app)
   registerErrorHandling(app, applicationErrorHttpMap)
   await registerCors(app, getCorsConfig())
   await registerSecurityHeaders(app, process.env.NODE_ENV === 'production')
