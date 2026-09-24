@@ -7,8 +7,10 @@ import { applicationErrorHttpMap } from './application-error-http-map.js'
 import { apiErrorSchema } from './shared/http/api-error.schema.js'
 import { getCorsConfig } from './shared/http/get-cors-config.js'
 import { getLoggerOptions } from './shared/http/get-logger-options.js'
+import { getRateLimitConfig } from './shared/http/get-rate-limit-config.js'
 import { registerCors } from './shared/http/register-cors.js'
 import { registerErrorHandling } from './shared/http/register-error-handling.js'
+import { registerRateLimit } from './shared/http/register-rate-limit.js'
 import { registerRequestId } from './shared/http/register-request-id.js'
 import { registerSecurityHeaders } from './shared/http/register-security-headers.js'
 
@@ -21,6 +23,7 @@ export const createApp = async () => {
   registerErrorHandling(app, applicationErrorHttpMap)
   await registerCors(app, getCorsConfig())
   await registerSecurityHeaders(app, process.env.NODE_ENV === 'production')
+  await registerRateLimit(app, getRateLimitConfig())
 
   await app.register(swagger, {
     openapi: {
@@ -44,6 +47,9 @@ export const createApp = async () => {
   app.get(
     '/health',
     {
+      config: {
+        rateLimit: false,
+      },
       schema: {
         tags: ['System'],
         summary: 'Health check',
