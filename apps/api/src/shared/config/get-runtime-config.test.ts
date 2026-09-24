@@ -77,4 +77,12 @@ describe('getRuntimeConfig', () => {
       getRuntimeConfig({ ...validEnv(), NODE_ENV: 'staging' }),
     ).toThrow('NODE_ENV must be development, test, or production.')
   })
+
+  it('rejects unsupported log levels', () => {
+    expect(() =>
+      getRuntimeConfig({ ...validEnv(), LOG_LEVEL: 'verbose' }),
+    ).toThrow(
+      'LOG_LEVEL must be fatal, error, warn, info, debug, trace, or silent.',
+    )
+  })
 })

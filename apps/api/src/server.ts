@@ -9,8 +9,8 @@ import { registerGracefulShutdown } from './shared/runtime/register-graceful-shu
 
 const config = getRuntimeConfig()
 const readinessState = createReadinessState()
-const databaseClient = createDatabaseClient(config.database)
 const app = await createApp(config, readinessState)
+const databaseClient = createDatabaseClient(config.database)
 
 readinessState.addCheck(
   'database',

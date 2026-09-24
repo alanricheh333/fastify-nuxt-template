@@ -12,7 +12,10 @@ export const getRuntimeConfig = (
       port: parsePositiveInteger(env.PORT, 3001, 'PORT'),
     },
     logging: {
-      level: env.LOG_LEVEL ?? (environment === 'production' ? 'info' : 'debug'),
+      level: parseLogLevel(
+        env.LOG_LEVEL,
+        environment === 'production' ? 'info' : 'debug',
+      ),
     },
     cors: {
       allowedOrigins: parseAllowedOrigins(env.CORS_ALLOWED_ORIGINS),
@@ -65,6 +68,29 @@ const parseEnvironment = (
   }
 
   throw new Error('NODE_ENV must be development, test, or production.')
+}
+
+const parseLogLevel = (
+  rawValue: string | undefined,
+  fallback: RuntimeConfig['logging']['level'],
+): RuntimeConfig['logging']['level'] => {
+  const value = rawValue ?? fallback
+
+  if (
+    value === 'fatal'
+    || value === 'error'
+    || value === 'warn'
+    || value === 'info'
+    || value === 'debug'
+    || value === 'trace'
+    || value === 'silent'
+  ) {
+    return value
+  }
+
+  throw new Error(
+    'LOG_LEVEL must be fatal, error, warn, info, debug, trace, or silent.',
+  )
 }
 
 const parseAllowedOrigins = (rawValue: string | undefined): ReadonlySet<string> => {
