@@ -1,11 +1,9 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 
-import { getDatabaseEnv } from './database-env.js'
+import type { DatabaseEnv } from './database-env.type.js'
 
-export const createDatabaseClient = () => {
-  const env = getDatabaseEnv()
-
+export const createDatabaseClient = (env: DatabaseEnv) => {
   const pool = new Pool({
     connectionString: env.databaseUrl,
     max: env.maxConnections,
