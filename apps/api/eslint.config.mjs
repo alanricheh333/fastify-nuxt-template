@@ -83,6 +83,22 @@ export default tseslint.config(
     },
   },
   {
+    files: ['test/**/*.ts', 'vitest.e2e.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: './tsconfig.e2e.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    files: ['vitest.e2e.config.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
+    },
+  },
+  {
     files: ['src/**/*.service.ts'],
     rules: {
       'no-restricted-syntax': [
