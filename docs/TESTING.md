@@ -127,6 +127,25 @@ End-to-end tests should verify observable behavior rather than private service i
 
 Do not add E2E tests mechanically to every small change. Use them where the boundary itself is important.
 
+## Real PostgreSQL E2E infrastructure
+
+API E2E tests run in a separate Vitest suite configured by `apps/api/vitest.e2e.config.ts` and use a real PostgreSQL database.
+
+The E2E suite must read its database from `TEST_DATABASE_URL`. Keep this separate from the normal application `DATABASE_URL` so test cleanup or destructive setup cannot affect development or production data.
+
+Local workflow:
+
+1. start a disposable/local PostgreSQL instance
+2. create a dedicated test database, for example `app_test`
+3. set `DATABASE_URL` to that test database and run `pnpm --filter @app/api db:migrate`
+4. set `TEST_DATABASE_URL` to the same dedicated test database and run `pnpm --filter @app/api test:e2e`
+
+CI provides PostgreSQL as a GitHub Actions service, applies the committed Drizzle migrations, then runs the API E2E suite against that database.
+
+Keep the E2E suite non-parallel by default while tests share one database. If the suite grows enough to require parallel execution, isolate tests by database/schema rather than allowing concurrent tests to mutate shared state unpredictably.
+
+The initial database E2E test intentionally performs a real SQL query. It is a smoke test for the harness itself and should remain lightweight.
+
 ## Database tests
 
 Pure business-rule tests should not require the database.
