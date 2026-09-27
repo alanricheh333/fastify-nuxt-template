@@ -162,7 +162,23 @@ The repository CI workflow runs on pull requests and pushes to `main` or `integr
 
 A dependency change is incomplete until the committed lockfile is updated. CI intentionally rejects package manifests that do not match `pnpm-lock.yaml`.
 
-Preview environments should be created by deterministic CI/hosting workflows rather than ad-hoc agent state.
+Preview environments are governed by [`docs/PREVIEWS.md`](PREVIEWS.md). They must be created and updated by deterministic CI/hosting workflows rather than ad-hoc agent state.
+
+The intended flow is:
+
+```text
+PR opened/updated
+→ required CI passes
+→ PR-scoped preview database/resources are resolved
+→ committed migrations run once
+→ API/web preview is deployed
+→ readiness succeeds
+→ preview URL/status is attached to the PR
+→ human verifies behavior
+→ merge/close triggers automatic teardown
+```
+
+Agents may inspect preview results and use the preview during validation, but they must not manually create untracked preview infrastructure or bypass teardown/security rules.
 
 When a preview environment exists, use it to verify meaningful user-facing flows before marking work ready for human review.
 
