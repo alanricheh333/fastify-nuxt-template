@@ -146,6 +146,23 @@ Keep the E2E suite non-parallel by default while tests share one database. If th
 
 The initial database E2E test intentionally performs a real SQL query. It is a smoke test for the harness itself and should remain lightweight.
 
+## Frontend Playwright baseline
+
+The template includes a minimal Playwright smoke test under `apps/web/test/e2e`.
+
+`apps/web/playwright.config.ts` starts the Nuxt development server automatically and runs the baseline against Chromium. The smoke test verifies that the template home page renders successfully in a real browser.
+
+Run it locally with:
+
+```bash
+pnpm --filter @app/web exec playwright install chromium
+pnpm --filter @app/web test:e2e
+```
+
+CI installs Chromium with the required system dependencies and runs the same suite.
+
+Keep the template smoke test infrastructure-focused. After creating a real product from this template, add Playwright tests for meaningful user journeys rather than accumulating assertions against the starter page. Prefer stable semantic locators such as roles and accessible names over CSS structure or styling classes.
+
 ## Database tests
 
 Pure business-rule tests should not require the database.
