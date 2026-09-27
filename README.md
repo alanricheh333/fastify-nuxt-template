@@ -31,6 +31,7 @@ Detailed guidance:
 - [`docs/TRUSTED_PROXY.md`](docs/TRUSTED_PROXY.md) — safe Fastify proxy trust, forwarding-header handling, client IP/rate-limit implications, and deployment verification
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — provider-neutral Docker/runtime baseline, health checks, graceful shutdown, runtime configuration, and release shape
 - [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) — production schema migration, compatibility, backfill, failure, and rollback workflow
+- [`docs/PREVIEWS.md`](docs/PREVIEWS.md) — provider-neutral PR preview lifecycle, isolation, migrations, secrets, status reporting, concurrency, and teardown
 - [`docs/DELIVERY.md`](docs/DELIVERY.md) — task planning, implementation order, validation, use-case README updates, CI, lifecycle, and PR workflow
 
 ## Core backend structure
@@ -63,4 +64,4 @@ Business decisions belong in pure rules. Services orchestrate only. Queries are 
 
 ## Status
 
-The template includes architecture/dependency enforcement, centralized runtime configuration and error handling, PostgreSQL/Drizzle runtime wiring, security middleware, health/readiness and graceful shutdown, CI, real PostgreSQL API E2E infrastructure, Playwright browser E2E, provider-neutral Docker deployment, production migration guidance, production secrets/configuration guidance, and a safe trusted-proxy baseline. Preview environments and provider-specific deployment configuration remain environment-specific and are added when a spin-off chooses its hosting platform.
+The template includes architecture/dependency enforcement, centralized runtime configuration and error handling, PostgreSQL/Drizzle runtime wiring, security middleware, health/readiness and graceful shutdown, CI, real PostgreSQL API E2E infrastructure, Playwright browser E2E, provider-neutral Docker deployment, production migration guidance, production secrets/configuration guidance, a safe trusted-proxy baseline, and a provider-neutral preview-environment contract. Provider-specific preview/deployment configuration is added when a spin-off chooses its hosting platform.
