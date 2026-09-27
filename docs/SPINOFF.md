@@ -146,7 +146,9 @@ Apply migrations locally against the intended development/test database with:
 pnpm --filter @app/api db:migrate
 ```
 
-Never make feature code depend on uncommitted local schema changes. Never blindly auto-run destructive production migrations. Production migration execution is defined separately in the deployment/migration workflow.
+Never make feature code depend on uncommitted local schema changes. Never blindly auto-run destructive production migrations.
+
+Before the first production release, implement the platform's one-shot migration job and release gate according to [`docs/MIGRATIONS.md`](MIGRATIONS.md). Production migrations are separate from API startup and should use backward-compatible expand-and-contract rollouts where old/new application versions can overlap.
 
 ### Time
 
@@ -407,6 +409,8 @@ Use this document as the starting workflow, then read the specialized documentat
 - `docs/AUTHENTICATION.md` — auth design guidance when auth is introduced
 - `docs/ERROR_HANDLING.md` — typed application errors and HTTP mapping
 - `docs/DATABASE_RUNTIME.md` — DB client ownership/runtime lifecycle
+- `docs/MIGRATIONS.md` — production migration/release contract, compatibility, failure, backfill, and rollback rules
+- `docs/DEPLOYMENT.md` — provider-neutral Docker/runtime/deployment baseline
 - `docs/DESIGN_SYSTEM.md` — Nuxt UI/design-system conventions
 - `docs/DELIVERY.md` — implementation, validation, PR, CI, runtime, and lifecycle workflow
 
