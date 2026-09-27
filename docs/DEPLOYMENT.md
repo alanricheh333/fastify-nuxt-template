@@ -136,7 +136,7 @@ build immutable images
 → route traffic after readiness succeeds
 ```
 
-The exact safe migration strategy is documented separately because production schema rollout deserves its own policy.
+Production schema rollout rules, failure handling, expand-and-contract guidance, backfills, destructive changes, and rollback expectations are defined in [`docs/MIGRATIONS.md`](MIGRATIONS.md).
 
 ## Runtime configuration
 
@@ -322,7 +322,7 @@ When a new product adopts this deployment baseline:
 - build both Dockerfiles successfully
 - replace Compose development values with platform environment/secrets in deployed environments
 - provision external PostgreSQL
-- define an explicit migration job
+- define an explicit migration job that follows `docs/MIGRATIONS.md`
 - configure real CORS origins
 - configure `NUXT_PUBLIC_API_BASE_URL`
 - configure TLS/ingress
