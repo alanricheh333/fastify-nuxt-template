@@ -21,6 +21,9 @@ export const createApp = async (
 ) => {
   const app = Fastify({
     logger: getLoggerOptions(config.logging.level),
+    trustProxy: config.server.trustedProxyCidrs.length > 0
+      ? [...config.server.trustedProxyCidrs]
+      : false,
   }).withTypeProvider<TypeBoxTypeProvider>()
 
   registerRequestId(app)
