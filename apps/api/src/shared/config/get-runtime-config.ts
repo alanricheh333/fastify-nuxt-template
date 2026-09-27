@@ -10,6 +10,7 @@ export const getRuntimeConfig = (
     server: {
       host: env.HOST ?? '0.0.0.0',
       port: parsePositiveInteger(env.PORT, 3001, 'PORT'),
+      trustedProxyCidrs: parseCsvValues(env.TRUSTED_PROXY_CIDRS),
     },
     logging: {
       level: parseLogLevel(
@@ -94,12 +95,7 @@ const parseLogLevel = (
 }
 
 const parseAllowedOrigins = (rawValue: string | undefined): ReadonlySet<string> => {
-  const allowedOrigins = new Set(
-    (rawValue ?? '')
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean),
-  )
+  const allowedOrigins = new Set(parseCsvValues(rawValue))
 
   if (allowedOrigins.size === 0) {
     throw new Error('CORS_ALLOWED_ORIGINS must contain at least one trusted origin.')
@@ -107,6 +103,12 @@ const parseAllowedOrigins = (rawValue: string | undefined): ReadonlySet<string> 
 
   return allowedOrigins
 }
+
+const parseCsvValues = (rawValue: string | undefined): string[] =>
+  (rawValue ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
 
 const requireValue = (rawValue: string | undefined, name: string): string => {
   if (!rawValue) {
