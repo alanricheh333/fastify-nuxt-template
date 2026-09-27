@@ -150,6 +150,7 @@ The deployment environment must supply the product's real values for runtime con
 NODE_ENV
 HOST
 PORT
+TRUSTED_PROXY_CIDRS
 LOG_LEVEL
 SHUTDOWN_TIMEOUT_MS
 CORS_ALLOWED_ORIGINS
@@ -231,9 +232,13 @@ Production HTTP should normally sit behind a trusted ingress/reverse proxy/load 
 
 Examples include managed platform ingress, Cloudflare, Traefik, Nginx, or cloud load balancers.
 
-Do not enable Fastify `trustProxy` globally until the actual deployment topology is known. Incorrect proxy trust can allow clients to spoof forwarding headers and undermine IP-based controls such as rate limiting.
+Fastify proxy trust is configured with `TRUSTED_PROXY_CIDRS` and is disabled when that value is empty. Only configure proxy IPs/CIDRs that correspond to the real deployment topology.
 
-Trusted proxy configuration is therefore a separate deployment decision in this template roadmap.
+Do not use universal `trustProxy: true` as a generic production setting. Incorrect proxy trust can allow clients to spoof forwarding headers and undermine `request.ip`, IP-based rate limiting, logging/audit interpretation, and protocol/host-derived behavior.
+
+The complete trust model, topology requirements, multi-hop guidance, spoofing tests, and provider-change checklist are defined in [`docs/TRUSTED_PROXY.md`](TRUSTED_PROXY.md).
+
+Where proxy-derived identity is security-relevant, restrict direct access to the API origin so clients cannot bypass the trusted ingress path.
 
 ## CORS
 
@@ -329,8 +334,10 @@ When a new product adopts this deployment baseline:
 - configure real CORS origins
 - configure `NUXT_PUBLIC_API_BASE_URL`
 - configure TLS/ingress
+- configure `TRUSTED_PROXY_CIDRS` only after documenting/verifying the real proxy path according to `docs/TRUSTED_PROXY.md`
+- block direct origin access where proxy-derived client identity is security-relevant
+- verify spoofed forwarding headers cannot override client identity
 - wire `/health/ready` into traffic readiness where supported
 - ensure termination grace exceeds application shutdown timeout
-- decide trusted-proxy behavior before relying on forwarded client IPs
 - move process-local infrastructure to shared services before horizontal scaling where required
 - never use the Compose PostgreSQL credentials/volume as the production database strategy
