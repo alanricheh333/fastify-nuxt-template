@@ -6,6 +6,7 @@ const validEnv = (): NodeJS.ProcessEnv => ({
   NODE_ENV: 'test',
   HOST: '127.0.0.1',
   PORT: '3001',
+  TRUSTED_PROXY_CIDRS: '10.0.0.0/8, 192.168.0.0/16',
   LOG_LEVEL: 'silent',
   CORS_ALLOWED_ORIGINS: 'http://localhost:3000',
   CORS_ALLOW_CREDENTIALS: 'false',
@@ -24,7 +25,11 @@ describe('getRuntimeConfig', () => {
     const config = getRuntimeConfig(validEnv())
 
     expect(config.environment).toBe('test')
-    expect(config.server).toEqual({ host: '127.0.0.1', port: 3001 })
+    expect(config.server).toEqual({
+      host: '127.0.0.1',
+      port: 3001,
+      trustedProxyCidrs: ['10.0.0.0/8', '192.168.0.0/16'],
+    })
     expect(config.logging.level).toBe('silent')
     expect(config.cors.allowedOrigins.has('http://localhost:3000')).toBe(true)
     expect(config.cors.allowCredentials).toBe(false)
@@ -41,7 +46,11 @@ describe('getRuntimeConfig', () => {
     })
 
     expect(config.environment).toBe('development')
-    expect(config.server).toEqual({ host: '0.0.0.0', port: 3001 })
+    expect(config.server).toEqual({
+      host: '0.0.0.0',
+      port: 3001,
+      trustedProxyCidrs: [],
+    })
     expect(config.logging.level).toBe('debug')
     expect(config.rateLimit).toEqual({ max: 300, timeWindowMs: 60000 })
     expect(config.database.maxConnections).toBe(10)
