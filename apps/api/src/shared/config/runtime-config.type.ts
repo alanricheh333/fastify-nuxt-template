@@ -9,6 +9,7 @@ export type RuntimeConfig = {
   server: {
     host: string
     port: number
+    trustedProxyCidrs: readonly string[]
   }
   logging: {
     level: LogLevel
