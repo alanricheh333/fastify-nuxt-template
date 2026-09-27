@@ -73,6 +73,8 @@ For every new runtime variable:
 
 Never commit real secrets. Production credentials, signing keys, API tokens, database passwords, and similar values belong in the deployment platform's secret/environment store.
 
+Before the first production deployment, follow [`docs/PRODUCTION_CONFIG.md`](PRODUCTION_CONFIG.md) to classify values as public configuration vs secrets, isolate environments, define least-privilege credentials, and establish rotation/exposure procedures.
+
 Do not put business settings into runtime configuration by default. Product rules that are part of business behavior should remain explicit product/domain concepts rather than becoming arbitrary environment switches.
 
 ## 5. Start the product with business-process slices
@@ -406,6 +408,7 @@ Use this document as the starting workflow, then read the specialized documentat
 - `docs/ARCHITECTURE.md` — slices, boundaries, services, rules, queries, repositories, frontend structure
 - `docs/TESTING.md` — unit, component, DB/API E2E, and browser E2E strategy
 - `docs/SECURITY.md` — secure feature and infrastructure baseline
+- `docs/PRODUCTION_CONFIG.md` — production secrets, typed runtime configuration, environment separation, rotation, and incident response
 - `docs/AUTHENTICATION.md` — auth design guidance when auth is introduced
 - `docs/ERROR_HANDLING.md` — typed application errors and HTTP mapping
 - `docs/DATABASE_RUNTIME.md` — DB client ownership/runtime lifecycle
