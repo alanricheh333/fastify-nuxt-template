@@ -140,6 +140,8 @@ Production schema rollout rules, failure handling, expand-and-contract guidance,
 
 ## Runtime configuration
 
+The full production configuration/secrets contract is defined in [`docs/PRODUCTION_CONFIG.md`](PRODUCTION_CONFIG.md). Deployment implementations should follow that document for environment separation, least-privilege credentials, rotation, public-vs-secret classification, and incident response.
+
 ### API
 
 The deployment environment must supply the product's real values for runtime configuration, including at least:
@@ -260,7 +262,7 @@ Supply secrets through the hosting platform's secret manager/environment system.
 - email/SMS credentials
 - object storage credentials
 
-Secrets and production configuration are covered in greater detail by the dedicated secrets/config roadmap step.
+Use `docs/PRODUCTION_CONFIG.md` for the detailed production secrets/configuration policy, including rotation and exposure response.
 
 ## Filesystem assumptions
 
@@ -321,6 +323,7 @@ When a new product adopts this deployment baseline:
 
 - build both Dockerfiles successfully
 - replace Compose development values with platform environment/secrets in deployed environments
+- follow `docs/PRODUCTION_CONFIG.md` for secret classification, environment separation, least privilege, and rotation
 - provision external PostgreSQL
 - define an explicit migration job that follows `docs/MIGRATIONS.md`
 - configure real CORS origins
