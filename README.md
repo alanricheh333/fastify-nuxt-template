@@ -28,6 +28,7 @@ Detailed guidance:
 - [`docs/TESTING.md`](docs/TESTING.md) — pure rule unit tests, TDD, real PostgreSQL API E2E, Playwright browser E2E, and testing boundaries
 - [`docs/SECURITY.md`](docs/SECURITY.md) — secure defaults and production-readiness checklist
 - [`docs/PRODUCTION_CONFIG.md`](docs/PRODUCTION_CONFIG.md) — production secrets, typed runtime configuration, environment isolation, least privilege, rotation, and exposure response
+- [`docs/TRUSTED_PROXY.md`](docs/TRUSTED_PROXY.md) — safe Fastify proxy trust, forwarding-header handling, client IP/rate-limit implications, and deployment verification
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — provider-neutral Docker/runtime baseline, health checks, graceful shutdown, runtime configuration, and release shape
 - [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) — production schema migration, compatibility, backfill, failure, and rollback workflow
 - [`docs/DELIVERY.md`](docs/DELIVERY.md) — task planning, implementation order, validation, use-case README updates, CI, lifecycle, and PR workflow
@@ -62,4 +63,4 @@ Business decisions belong in pure rules. Services orchestrate only. Queries are 
 
 ## Status
 
-The template includes architecture/dependency enforcement, centralized runtime configuration and error handling, PostgreSQL/Drizzle runtime wiring, security middleware, health/readiness and graceful shutdown, CI, real PostgreSQL API E2E infrastructure, Playwright browser E2E, provider-neutral Docker deployment, production migration guidance, and production secrets/configuration guidance. Preview environments and provider-specific deployment configuration remain environment-specific and are added when a spin-off chooses its hosting platform.
+The template includes architecture/dependency enforcement, centralized runtime configuration and error handling, PostgreSQL/Drizzle runtime wiring, security middleware, health/readiness and graceful shutdown, CI, real PostgreSQL API E2E infrastructure, Playwright browser E2E, provider-neutral Docker deployment, production migration guidance, production secrets/configuration guidance, and a safe trusted-proxy baseline. Preview environments and provider-specific deployment configuration remain environment-specific and are added when a spin-off chooses its hosting platform.
