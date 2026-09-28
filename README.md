@@ -17,6 +17,8 @@ The backend uses business-process feature slices rather than framework modules o
 
 When creating a real project from this template, start with [`docs/SPINOFF.md`](docs/SPINOFF.md). It explains how to initialize the product and how the architecture, database, runtime configuration, security baseline, tests, CI, health checks, and delivery rules should be used from the first feature onward.
 
+Use [`docs/TEMPLATE_COMPLETENESS.md`](docs/TEMPLATE_COMPLETENESS.md) to distinguish what the generic template already guarantees from the decisions that belong to a specific spin-off.
+
 ## Agent guidance
 
 Coding agents must read `AGENTS.md` first.
@@ -24,6 +26,7 @@ Coding agents must read `AGENTS.md` first.
 Detailed guidance:
 
 - [`docs/SPINOFF.md`](docs/SPINOFF.md) — operational workflow for creating and starting a real product from the template
+- [`docs/TEMPLATE_COMPLETENESS.md`](docs/TEMPLATE_COMPLETENESS.md) — objective checklist for template-ready vs product-specific responsibilities
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — feature-slice structure, boundaries, services, rules, queries, repositories, DTOs, DB placement, and time handling
 - [`docs/TESTING.md`](docs/TESTING.md) — pure rule unit tests, TDD, real PostgreSQL API E2E, Playwright browser E2E, and testing boundaries
 - [`docs/SECURITY.md`](docs/SECURITY.md) — secure defaults and production-readiness checklist
@@ -65,4 +68,6 @@ Business decisions belong in pure rules. Services orchestrate only. Queries are 
 
 ## Status
 
-The template includes architecture/dependency enforcement, centralized runtime configuration and error handling, PostgreSQL/Drizzle runtime wiring, security middleware, health/readiness and graceful shutdown, CI, real PostgreSQL API E2E infrastructure, Playwright browser E2E, provider-neutral Docker deployment, production migration guidance, production secrets/configuration guidance, a safe trusted-proxy baseline, a provider-neutral preview-environment contract, and a lightweight MVP observability baseline. Provider-specific preview/deployment configuration and richer telemetry are added when a spin-off needs them.
+The generic template baseline is complete enough to spin off a real product without redesigning core infrastructure. It includes architecture/dependency enforcement, centralized runtime configuration and error handling, PostgreSQL/Drizzle runtime wiring, security middleware, health/readiness and graceful shutdown, CI, real PostgreSQL API E2E infrastructure, Playwright browser E2E, provider-neutral Docker deployment, production migration guidance, production secrets/configuration guidance, a safe trusted-proxy baseline, a provider-neutral preview-environment contract, and a lightweight MVP observability baseline.
+
+Provider-specific hosting/preview automation and product-specific integrations such as authentication, payments, queues, storage, email/SMS, Redis, or observability vendors are intentionally implemented only when a spin-off requires them.
