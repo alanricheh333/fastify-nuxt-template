@@ -6,6 +6,8 @@ This document is the operational entry point for a new spin-off. The detailed ru
 
 Use `docs/TEMPLATE_COMPLETENESS.md` when you need to distinguish what the generic template already guarantees from product-specific work that should be implemented only after spin-off.
 
+Use `docs/TICKET_TEMPLATE.md` when creating the product backlog so implementation tickets are detailed enough for coding agents to work without guessing important product behavior.
+
 ## 1. Create the product repository
 
 Create a new repository from the GitHub template instead of copying selected folders manually. Keep the full history-independent template contents so architecture checks, CI, tests, runtime configuration, and documentation start in a known state.
@@ -345,12 +347,13 @@ A dependency change must include the lockfile. A schema change must include revi
 
 ## 13. Feature delivery workflow
 
-For every product task, coding agents should follow `AGENTS.md` and `docs/DELIVERY.md`.
+For every product task, coding agents should follow `AGENTS.md`, `docs/TICKET_TEMPLATE.md`, and `docs/DELIVERY.md`.
 
 At a high level:
 
 ```text
 understand requirement
+→ verify ticket readiness
 → inspect affected slice
 → identify rules/security/data implications
 → write correct-level tests
@@ -408,6 +411,7 @@ Use this document as the starting workflow, then read the specialized documentat
 
 - `AGENTS.md` — mandatory coding-agent rules
 - `docs/TEMPLATE_COMPLETENESS.md` — template-ready vs spin-off responsibilities
+- `docs/TICKET_TEMPLATE.md` — implementation-ticket structure, readiness, dependencies, blockers, and handoff standard
 - `docs/ARCHITECTURE.md` — slices, boundaries, services, rules, queries, repositories, frontend structure
 - `docs/TESTING.md` — unit, component, DB/API E2E, and browser E2E strategy
 - `docs/SECURITY.md` — secure feature and infrastructure baseline
