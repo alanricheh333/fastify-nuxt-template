@@ -4,6 +4,8 @@ Use this guide when creating a real product from this repository. The goal is to
 
 This document is the operational entry point for a new spin-off. The detailed rules remain in `AGENTS.md` and the referenced documents under `docs/`.
 
+Use `docs/TEMPLATE_COMPLETENESS.md` when you need to distinguish what the generic template already guarantees from product-specific work that should be implemented only after spin-off.
+
 ## 1. Create the product repository
 
 Create a new repository from the GitHub template instead of copying selected folders manually. Keep the full history-independent template contents so architecture checks, CI, tests, runtime configuration, and documentation start in a known state.
@@ -405,6 +407,7 @@ The template supplies boundaries and guidance for these decisions, not one unive
 Use this document as the starting workflow, then read the specialized documentation when that concern is touched:
 
 - `AGENTS.md` — mandatory coding-agent rules
+- `docs/TEMPLATE_COMPLETENESS.md` — template-ready vs spin-off responsibilities
 - `docs/ARCHITECTURE.md` — slices, boundaries, services, rules, queries, repositories, frontend structure
 - `docs/TESTING.md` — unit, component, DB/API E2E, and browser E2E strategy
 - `docs/SECURITY.md` — secure feature and infrastructure baseline
@@ -414,6 +417,8 @@ Use this document as the starting workflow, then read the specialized documentat
 - `docs/DATABASE_RUNTIME.md` — DB client ownership/runtime lifecycle
 - `docs/MIGRATIONS.md` — production migration/release contract, compatibility, failure, backfill, and rollback rules
 - `docs/DEPLOYMENT.md` — provider-neutral Docker/runtime/deployment baseline
+- `docs/PREVIEWS.md` — provider-neutral PR preview lifecycle and teardown contract
+- `docs/OBSERVABILITY.md` — lightweight MVP observability baseline and upgrade triggers
 - `docs/DESIGN_SYSTEM.md` — Nuxt UI/design-system conventions
 - `docs/DELIVERY.md` — implementation, validation, PR, CI, runtime, and lifecycle workflow
 
