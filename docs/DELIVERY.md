@@ -7,11 +7,12 @@ This repository is intended to support autonomous agent work while preserving hu
 For every task:
 
 1. Read the complete request, linked ticket, acceptance criteria, and relevant repository documentation.
-2. Restate the implementation goal internally as a small set of verifiable outcomes.
-3. Inspect the existing slice/use case before changing structure.
-4. Identify missing information that could materially change business behavior, architecture, security, data ownership, API/event contracts, or destructive actions.
-5. Ask for clarification when such ambiguity exists.
-6. Otherwise choose the smallest reversible assumption consistent with existing patterns and document it in the task/PR summary.
+2. If the task originated from a product backlog, verify that the ticket follows `docs/TICKET_TEMPLATE.md` closely enough to remove material ambiguity.
+3. Restate the implementation goal internally as a small set of verifiable outcomes.
+4. Inspect the existing slice/use case before changing structure.
+5. Identify missing information that could materially change business behavior, architecture, security, data ownership, API/event contracts, or destructive actions.
+6. Ask for clarification when such ambiguity exists.
+7. Otherwise choose the smallest reversible assumption consistent with existing patterns and document it in the task/PR summary.
 
 Do not invent product behavior that is absent from the requirements.
 
