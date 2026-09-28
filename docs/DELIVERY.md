@@ -148,17 +148,22 @@ Never merge the PR unless explicitly instructed by the user.
 
 Treat CI as an independent verification layer. Local/agent tests passing do not replace CI.
 
-The repository CI workflow runs on pull requests and pushes to `main` or `integration`. It must:
+The repository CI workflow runs on pull requests and pushes to `main` or `integration`. It currently performs, in order:
 
-1. use the repository-pinned Node version from `.nvmrc`
-2. use the repository-pinned pnpm version through Corepack
-3. install with `pnpm install --frozen-lockfile`
-4. run type checking
-5. run linting
-6. run architecture/dependency rules
-7. run tests
-8. build the repository
-9. run the API Drizzle migration/schema check
+1. repository checkout
+2. Node setup from `.nvmrc`
+3. Corepack/pnpm setup using the repository-pinned package manager
+4. `pnpm install --frozen-lockfile`
+5. type checking
+6. linting
+7. architecture/dependency rules
+8. unit/component tests
+9. repository build
+10. Drizzle migration/schema check
+11. apply committed migrations to disposable PostgreSQL
+12. API E2E tests against that real PostgreSQL database
+13. install Playwright Chromium
+14. browser E2E tests
 
 A dependency change is incomplete until the committed lockfile is updated. CI intentionally rejects package manifests that do not match `pnpm-lock.yaml`.
 
@@ -200,6 +205,8 @@ Configuration rules:
 A merge to the protected production branch may trigger deployment workflows. Do not bypass branch protection, CI gates, environment approvals, or production safety controls.
 
 If a change requires an unsafe one-step database/schema/application rollout, redesign it into a backwards-compatible migration path where practical.
+
+Production deployment, migration, configuration, proxy, preview, and observability guidance lives in the dedicated documents referenced by `docs/SPINOFF.md`.
 
 ## Graceful shutdown
 
